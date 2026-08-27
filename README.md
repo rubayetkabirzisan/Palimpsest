@@ -1,58 +1,182 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛡️ Palimpsest — AI-Powered Document Security (DLP)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Palimpsest** is an AI-powered Data Loss Prevention (DLP) tool built with Laravel. It catches sensitive information — credit cards, SSNs, API keys, confidential business data — before it leaks, using a two-pass detection pipeline: fast regex pattern matching followed by contextual AI analysis via Google's Gemini Flash.
 
-## About Laravel
+> *"A palimpsest is a manuscript where the original text has been scraped away and written over — but traces of the original always remain. Your sensitive data works the same way."*
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ⚡ Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Built ✅
 
-## Learning Laravel
+- **Two-Pass Detection Pipeline**
+  - **Regex Pass**: Catches structured patterns (credit cards, SSNs, API keys, emails, phone numbers, passwords, private keys)
+  - **AI Pass (Gemini Flash)**: Catches contextual/semantic sensitive data that regex can't (e.g., *"the merger price is $40/share"*, internal codenames)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Multimodal Scanning**: Upload text files, PDFs, and images — Gemini Flash analyzes them all using vision capabilities
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Async Queue Processing**: Documents are scanned in the background via Laravel Queues. No blocking uploads.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- **Role-Based Access Control (RBAC)**:
+  - **Admin/Compliance**: See raw (unredacted) findings with actual sensitive data
+  - **Regular Users**: See redacted view with `[REDACTED: reason]` markers
 
-## Agentic Development
+- **Custom Detection Rules**: Admins can define domain-specific rules (e.g., *"Flag mentions of 'Project Phoenix'"*) that are injected into the AI prompt
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- **Field-Level Encryption**: Sensitive finding snippets are encrypted at rest using Laravel's `encrypted` cast
 
-```bash
-composer require laravel/boost --dev
+- **Audit Logging**: Every upload, view, and scan is tracked with who/what/when
 
-php artisan boost:install
+
+
+- **Dashboard**: Real-time stats — documents scanned, findings by severity, regex vs AI detection breakdown, recent activity feed
+
+- **Comprehensive Test Suite**: Pest/PHPUnit tests covering upload flow, regex detector, RBAC, job dispatching, and access control
+
+### Roadmap 🗺️
+
+- [ ] **REST API**: `POST /api/scan` endpoint for external integrations
+- [ ] **Real-Time Updates**: WebSocket broadcasting via Laravel Reverb
+- [ ] **Multi-Tenancy**: Team-based workspaces with tenant isolation
+- [ ] **Supabase Storage**: Migrate from local filesystem to Supabase Storage
+- [ ] **Laravel Horizon**: Redis-backed queue monitoring dashboard
+- [ ] **Bulk Upload**: Upload and scan multiple documents at once
+- [ ] **Export Reports**: Download scan reports as PDF/CSV
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    A[User Uploads Document] --> B[DocumentController]
+    B --> C[Store File Locally]
+    B --> D[Create Document Record]
+    B --> E[Dispatch ScanDocumentJob]
+    E --> F[DocumentScanService]
+    F --> G[Regex Detector]
+    F --> H[Gemini Flash API]
+    G --> I[Save Regex Findings]
+    H --> J[Save AI Findings]
+    H --> K[Custom Rules Injected]
+    F --> L[Update Status: Complete]
+    L --> M[Audit Log Entry]
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🛠️ Tech Stack
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Laravel 13 |
+| **Frontend** | Blade + Tailwind CSS |
+| **Auth** | Laravel Breeze |
+| **Database** | PostgreSQL (Supabase) |
+| **AI Engine** | Google Gemini Flash API |
+| **Queue** | Laravel Database Queue Driver |
+| **Encryption** | Laravel `encrypted` cast |
+| **Testing** | Pest / PHPUnit |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🚀 Setup
 
-## Security Vulnerabilities
+### Prerequisites
+- PHP 8.3+
+- Composer
+- Node.js 18+
+- PostgreSQL database (we use Supabase)
+- Google Gemini API key
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Installation
 
-## License
+```bash
+# Clone the repository
+git clone https://github.com/rubayetkabirzisan/Palimpsest-Sentinel.git
+cd Palimpsest-Sentinel
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Install dependencies
+composer install
+npm install
+
+# Environment setup
+cp .env.example .env
+php artisan key:generate
+```
+
+### Configure `.env`
+
+```env
+# Database (Supabase PostgreSQL)
+DB_CONNECTION=pgsql
+DB_HOST=your-supabase-host.pooler.supabase.com
+DB_PORT=6543
+DB_DATABASE=postgres
+DB_USERNAME=postgres.your-project-ref
+DB_PASSWORD=your-password
+
+# Gemini Flash API
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+### Run
+
+```bash
+# Run migrations and seed demo users
+php artisan migrate
+php artisan db:seed
+
+# Build frontend assets
+npm run build
+
+# Start the application
+php artisan serve
+
+# In a separate terminal — start the queue worker
+php artisan queue:work
+```
+
+### Demo Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@palimpsest.dev` | `password` |
+| Compliance | `compliance@palimpsest.dev` | `password` |
+| User | `user@palimpsest.dev` | `password` |
+
+---
+
+## 🧪 Running Tests
+
+```bash
+php artisan test
+```
+
+---
+
+## 📁 Project Structure
+
+```
+app/
+├── Http/Controllers/
+│   ├── AuditLogController.php       # Audit log viewing
+│   ├── CustomRuleController.php     # CRUD for detection rules
+│   ├── DashboardController.php      # Stats and activity dashboard
+│   └── DocumentController.php       # Upload, view, delete documents
+├── Jobs/
+│   └── ScanDocumentJob.php          # Queued background scanning
+├── Models/
+│   ├── AuditLog.php
+│   ├── CustomRule.php
+│   ├── Document.php
+│   ├── Finding.php
+│   └── User.php
+├── Providers/
+│   └── AppServiceProvider.php       # Gates for RBAC
+└── Services/
+    ├── DocumentScanService.php      # Orchestrates regex + AI pipeline
+    ├── GeminiService.php            # Gemini Flash API integration
+    └── RegexDetector.php            # Pattern-based detection engine
+```
