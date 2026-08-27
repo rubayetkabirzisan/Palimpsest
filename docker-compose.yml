@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # The Web Application Server
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: palimpsest-app
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+    # Read environment variables directly from the local .env file
+    env_file:
+      - .env
+    # Override command to ensure it always binds to 0.0.0.0
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  # The Background Queue Worker (for AI scanning)
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: palimpsest-queue
+    environment:
+      - APP_ENV=local
+    env_file:
+      - .env
+    # Override command to run the queue worker instead of the web server
+    command: php artisan queue:work
+    depends_on:
+      - app

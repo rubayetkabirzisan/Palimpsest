@@ -42,6 +42,9 @@ jobs:
     - name: Run E2E Tests (Playwright)
       run: npm run test:e2e
 
+    - name: Verify Docker Build
+      run: docker compose build
+
     - name: Upload Playwright Report
       if: always()
       uses: actions/upload-artifact@v4
