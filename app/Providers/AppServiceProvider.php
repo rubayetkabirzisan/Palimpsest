@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Gate: Can manage custom detection rules
         Gate::define('manage-rules', function (User $user) {
-            return in_array($user->role, ['admin', 'compliance']);
+            return $user->isAdmin();
         });
 
         // Gate: Admin-only actions
