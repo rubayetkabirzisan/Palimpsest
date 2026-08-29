@@ -46,6 +46,7 @@ jobs:
         sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env.testing
         sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/testing.sqlite/' .env.testing
         php artisan key:generate --env=testing
+        cp .env.testing .env
 
     - name: Run E2E Tests (Playwright)
       run: npm run test:e2e
