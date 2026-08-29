@@ -42,11 +42,17 @@ jobs:
     - name: Prepare testing environment
       run: |
         cp .env.example .env.testing
+        touch database/testing.sqlite
         sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env.testing
+        sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/testing.sqlite/' .env.testing
         php artisan key:generate --env=testing
 
     - name: Run E2E Tests (Playwright)
       run: npm run test:e2e
+
+    - name: Print Laravel Logs on Failure
+      if: failure()
+      run: cat storage/logs/laravel.log || true
 
     - name: Verify Docker Build
       run: docker compose build
