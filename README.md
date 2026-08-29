@@ -74,7 +74,13 @@ The easiest way to run the application is using the provided Docker configuratio
 
 The application includes an End-to-End test suite written in Playwright. The tests are designed to run against an isolated SQLite database (`.env.testing`) to prevent destructive actions against the production Supabase database.
 
-To run the tests locally:
+To run the tests locally, first create your testing environment file:
+```bash
+cp .env.example .env.testing
+php artisan key:generate --env=testing
+```
+
+Then execute the test suite:
 ```bash
 npm ci
 npm run test:e2e
